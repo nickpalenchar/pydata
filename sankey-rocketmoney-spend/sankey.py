@@ -1,16 +1,49 @@
-from typing import List, TypedDict
+from typing import List, TypedDict, Union
 import plotly.graph_objects as go
+from pprint import pprint
+
 
 class Datapoint(TypedDict):
     source: str
     target: str
-    value: float
+    value: Union[float, str]
+
+def calculate_autoout_value(data_points: List[Datapoint], dp: Datapoint) -> float:
+    # Calculate the total value of all other datapoints with the same source
+    total = 0
+    for other_dp in data_points:
+        if dp['target'] == other_dp['source']:
+            if isinstance(other_dp['value'], int):
+                total += other_dp['value']
+            elif dp != other_dp and isinstance(other_dp['value'], str):
+                if other_dp['value'] == 'autoout':
+                    total += calculate_autoout_value(data_points, other_dp)
+                else:
+                    raise ValueError('Unknown value name')
+            
+    # total_value = sum(other_dp['value'] for other_dp in data_points 
+    #     if dp['target'] == other_dp['source'] 
+    #     and isinstance(other_dp['value'], int)
+    # )
+    return total
+
+def calculate_autoin_value():
+    pass # TODO
+
+def process_datapoints(data_points: List[Datapoint]) -> List[Datapoint]:
+    processed_data_points = []
+    for dp in data_points:
+        if dp['value'] == 'autoout':
+            dp['value'] = calculate_autoout_value(data_points, dp)
+        processed_data_points.append(dp)
+    return processed_data_points
 
 def create_sankey_diagram(data_points: List[Datapoint]) -> None:
-    # Extract unique nodes from the data
+    data_points = process_datapoints(data_points)
+    pprint(data_points)
+
     nodes = list(set([dp['source'] for dp in data_points] + [dp['target'] for dp in data_points]))
 
-    # Create dictionaries to map nodes to indices
     node_indices = {node: i for i, node in enumerate(nodes)}
 
     # Convert data_points to the format needed for the Sankey diagram
@@ -18,7 +51,6 @@ def create_sankey_diagram(data_points: List[Datapoint]) -> None:
     link_target = [node_indices[dp['target']] for dp in data_points]
     values = [dp['value'] for dp in data_points]
 
-    # Create Sankey diagram
     fig = go.Figure(data=[go.Sankey(
         node=dict(
             pad=15,
@@ -33,7 +65,6 @@ def create_sankey_diagram(data_points: List[Datapoint]) -> None:
         )
     )])
 
-    # Update layout for better aesthetics
     fig.update_layout(title_text="Sankey Diagram Example", font_size=10)
     fig.show()
 
@@ -45,7 +76,8 @@ data_points_example: List[Datapoint] = [
     {'source': 'Node B', 'target': 'Node D', 'value': 8},
     {'source': 'Node C', 'target': 'Node A', 'value': 12},
     {'source': 'Node C', 'target': 'Node D', 'value': 3},
-    {'source': 'Node D', 'target': 'Node C', 'value': 20},
+    {'source': 'Node D', 'target': 'Node C', 'value': 'autoout'},
 ]
+
 if __name__ == '__main__':
     create_sankey_diagram(data_points_example)
