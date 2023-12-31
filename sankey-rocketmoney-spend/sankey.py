@@ -1,4 +1,3 @@
-from collections import namedtuple
 from typing import List, TypedDict
 import plotly.graph_objects as go
 
@@ -38,13 +37,15 @@ def create_sankey_diagram(data_points: List[Datapoint]) -> None:
     fig.update_layout(title_text="Sankey Diagram Example", font_size=10)
     fig.show()
 
+# Example usage
+data_points_example: List[Datapoint] = [
+    {'source': 'Node A', 'target': 'Node B', 'value': 10},
+    {'source': 'Node A', 'target': 'Node C', 'value': 15},
+    {'source': 'Node B', 'target': 'Node C', 'value': 5},
+    {'source': 'Node B', 'target': 'Node D', 'value': 8},
+    {'source': 'Node C', 'target': 'Node A', 'value': 12},
+    {'source': 'Node C', 'target': 'Node D', 'value': 3},
+    {'source': 'Node D', 'target': 'Node C', 'value': 20},
+]
 if __name__ == '__main__':
-  # Example usage
-  data_points_example: List[Datapoint] = [
-      {'source': 'Node A', 'target': 'Node B', 'value': 10},
-      {'source': 'Node A', 'target': 'Node C', 'value': 15},
-      {'source': 'Node B', 'target': 'Node C', 'value': 5},
-      {'source': 'Node C', 'target': 'Node A', 'value': 12},
-  ]
-
-  create_sankey_diagram(data_points_example)
+    create_sankey_diagram(data_points_example)

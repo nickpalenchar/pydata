@@ -4,7 +4,7 @@ verify_ssl = true
 name = "pypi"
 
 [scripts]
-start = "python report.py"
+start = "python spending_report.py"
 
 [packages]
 plotly = "*"
