@@ -8,8 +8,11 @@ class Datapoint(TypedDict):
     target: str
     value: Union[float, str]
 
-def calculate_autoout_value(data_points: List[Datapoint], dp: Datapoint) -> float:
-    # Calculate the total value of all other datapoints with the same source
+def _calculate_autoout_value(data_points: List[Datapoint], dp: Datapoint) -> float:
+    """
+    Calculate the total value of all other datapoints with the same source
+    *Does not detect circular references
+    """
     total = 0
     for other_dp in data_points:
         if dp['target'] == other_dp['source']:
@@ -17,14 +20,10 @@ def calculate_autoout_value(data_points: List[Datapoint], dp: Datapoint) -> floa
                 total += other_dp['value']
             elif dp != other_dp and isinstance(other_dp['value'], str):
                 if other_dp['value'] == 'autoout':
-                    total += calculate_autoout_value(data_points, other_dp)
+                    total += _calculate_autoout_value(data_points, other_dp)
                 else:
                     raise ValueError('Unknown value name')
             
-    # total_value = sum(other_dp['value'] for other_dp in data_points 
-    #     if dp['target'] == other_dp['source'] 
-    #     and isinstance(other_dp['value'], int)
-    # )
     return total
 
 def calculate_autoin_value():
@@ -34,11 +33,12 @@ def process_datapoints(data_points: List[Datapoint]) -> List[Datapoint]:
     processed_data_points = []
     for dp in data_points:
         if dp['value'] == 'autoout':
-            dp['value'] = calculate_autoout_value(data_points, dp)
+            dp['value'] = _calculate_autoout_value(data_points, dp)
         processed_data_points.append(dp)
     return processed_data_points
 
 def create_sankey_diagram(data_points: List[Datapoint]) -> None:
+
     data_points = process_datapoints(data_points)
     pprint(data_points)
 
@@ -46,7 +46,6 @@ def create_sankey_diagram(data_points: List[Datapoint]) -> None:
 
     node_indices = {node: i for i, node in enumerate(nodes)}
 
-    # Convert data_points to the format needed for the Sankey diagram
     link_source = [node_indices[dp['source']] for dp in data_points]
     link_target = [node_indices[dp['target']] for dp in data_points]
     values = [dp['value'] for dp in data_points]

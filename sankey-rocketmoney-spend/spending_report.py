@@ -1,5 +1,5 @@
 from sankey import Datapoint, create_sankey_diagram
-from secrets.spending23 import datapoints
+from secrets.spending23_full import datapoints
 
 def main():
   print(datapoints)
